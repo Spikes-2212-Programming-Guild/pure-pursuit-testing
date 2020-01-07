@@ -7,9 +7,16 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.IMotorController;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.spikes2212.command.drivetrains.TankDrivetrain;
+import com.spikes2212.control.FeedForwardController;
+import com.spikes2212.path.*;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -37,10 +44,10 @@ public class Robot extends TimedRobot {
   public static OdometryHandler handler;
   public static ADXRS450_Gyro gyro;
   public static Waypoint start = new Waypoint(0,0), middle = new Waypoint(2,0),
-          end = new Waypoint(1,1);
+          end = new Waypoint(3,0);
   public static Path path;
   public static PurePursuitController controller;
-  public static final double kV = 0, kA = 0, kB = 0;
+  public static final double kV = 1/3.05, kA = 0, kB = 0.04;
 
   @Override
   public void robotInit() {
@@ -51,11 +58,13 @@ public class Robot extends TimedRobot {
       (rightVictor = new WPI_VictorSPX(RobotMap.RIGHT_MOTOR_VICTOR)).follow(rightTalon);
       right = new Encoder(RobotMap.ENCODER_RIGHT_POS, RobotMap.ENCODER_RIGHT_NEG);
       left = new Encoder(RobotMap.ENCODER_LEFT_POS, RobotMap.ENCODER_LEFT_NEG);
+      right.setDistancePerPulse(6*0.0254*Math.PI/360);
+      left.setDistancePerPulse(6*0.0254*Math.PI/360);
       gyro = new ADXRS450_Gyro();
       handler = new OdometryHandler(left::getDistance, right::getDistance,
               gyro::getAngle, 0, 0, 0);
-      path = new Path(2000, 0.3, 0.7,
-              0.04, 1, 3, 1, start,
+      path = new Path(0.15, 0.98,
+              0.001, 3.05, 3, 18, start,
               middle, end);
       controller = new PurePursuitController(handler, path, 0.2, 0.7);
   }
@@ -63,20 +72,47 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
       handler.calculate();
+      SmartDashboard.putNumber("odometry x position", handler.getX());
+      SmartDashboard.putNumber("odometry y position", handler.getY());
+      SmartDashboard.putNumber("odometry yaw position", handler.getYaw());
   }
+
+  @Override
+  public void disabledInit() {drivetrain.stop();}
+
+  public static double previousRate = 0;
+    @Override
+    public void teleopPeriodic() {
+        drivetrain.tankDrive(1, -1);
+        double currentMaximum = Double.MIN_VALUE;
+        if((-previousRate + left.getRate())/getPeriod() > currentMaximum)
+        SmartDashboard.putNumber("max acceleration", currentMaximum = (-previousRate + left.getRate())/getPeriod());
+        SmartDashboard.putNumber("period", getPeriod());
+        previousRate = left.getRate();
+    }
+
+    @Override
+    public void autonomousInit() {
+        left.reset();
+        right.reset();
+        handler.set(0,0);
+        gyro.reset();
+    }
 
   @Override
   public void autonomousPeriodic() {
       try {
           double[] speeds = controller.getTargetSpeeds();
-          FeedForwardController left = new FeedForwardController(kV, kA, getPeriod());
-          FeedForwardController right = new FeedForwardController(kV, kA, getPeriod());
-          drivetrain.tankDrive(left.calculate(speeds[0]) +
-                  kB * (speeds[0] - leftTalon.getSelectedSensorVelocity(0)),
-                  right.calculate(speeds[1]) +
-                  kB * (speeds[1] - rightTalon.getSelectedSensorVelocity(0)));
+          FeedForwardController leftController = new FeedForwardController(kV, kA, getPeriod());
+          FeedForwardController rightController = new FeedForwardController(kV, kA, getPeriod());
+          drivetrain.tankDrive(leftController.calculate(speeds[0]) +
+                  kB * (speeds[0] - left.getRate()),
+                  rightController.calculate(speeds[1]) +
+                  kB * (speeds[1] - right.getRate()));
+          SmartDashboard.putNumberArray("speeds", speeds);
       } catch (LookaheadPointNotFoundException lpnfe) {
           lpnfe.printStackTrace();
+          drivetrain.stop();
       }
   }
 }
