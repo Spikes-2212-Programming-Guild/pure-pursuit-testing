@@ -43,11 +43,11 @@ public class Robot extends TimedRobot {
   public static TankDrivetrain drivetrain;
   public static OdometryHandler handler;
   public static ADXRS450_Gyro gyro;
-  public static Waypoint start = new Waypoint(0,0), middle = new Waypoint(2,0),
-          end = new Waypoint(3,0);
+  public static Waypoint start = new Waypoint(0,0), middle = new Waypoint(0,2),
+          end = new Waypoint(0,3);
   public static Path path;
   public static PurePursuitController controller;
-  public static final double kV = 1/3.05, kA = 0, kB = 0.04;
+  public static final double kV = 1/3.05, kA = 0.002, kB = 0.04;
 
   @Override
   public void robotInit() {
@@ -81,10 +81,10 @@ public class Robot extends TimedRobot {
   public void disabledInit() {drivetrain.stop();}
 
   public static double previousRate = 0;
+  public static double currentMaximum = Double.MIN_VALUE;
     @Override
     public void teleopPeriodic() {
         drivetrain.tankDrive(1, -1);
-        double currentMaximum = Double.MIN_VALUE;
         if((-previousRate + left.getRate())/getPeriod() > currentMaximum)
         SmartDashboard.putNumber("max acceleration", currentMaximum = (-previousRate + left.getRate())/getPeriod());
         SmartDashboard.putNumber("period", getPeriod());
@@ -109,9 +109,10 @@ public class Robot extends TimedRobot {
                   kB * (speeds[0] - left.getRate()),
                   rightController.calculate(speeds[1]) +
                   kB * (speeds[1] - right.getRate()));
-          SmartDashboard.putNumberArray("speeds", speeds);
-      } catch (LookaheadPointNotFoundException lpnfe) {
-          lpnfe.printStackTrace();
+          SmartDashboard.putNumber("speed left", speeds[0]);
+          SmartDashboard.putNumber("speed right", speeds[1]);
+      } catch (LookaheadPointNotFoundException e) {
+          e.printStackTrace();
           drivetrain.stop();
       }
   }
