@@ -63,8 +63,8 @@ public class Robot extends TimedRobot {
       gyro = new ADXRS450_Gyro();
       handler = new OdometryHandler(left::getDistance, right::getDistance,
               gyro::getAngle, 0, 0, 0);
-      path = new Path(0.15, 0.98,
-              0.001, 3.05, 3, 18, start,
+      path = new Path(0.15, 0.9,
+              0.05, 3.05, 3, 18, start,
               middle, end);
       controller = new PurePursuitController(handler, path, 0.4, 0.7);
   }
