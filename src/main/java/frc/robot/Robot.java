@@ -97,6 +97,7 @@ public class Robot extends TimedRobot {
         right.reset();
         handler.set(0,0);
         gyro.reset();
+        controller.reset();
     }
 
   @Override
@@ -111,9 +112,13 @@ public class Robot extends TimedRobot {
                   kB * (speeds[1] - right.getRate()));
           SmartDashboard.putNumber("speed left", speeds[0]);
           SmartDashboard.putNumber("speed right", speeds[1]);
+          SmartDashboard.putNumber("speed left converted", leftController.calculate(speeds[0]) +
+                  kB * (speeds[0] - left.getRate()));
+          SmartDashboard.putNumber("speed right converted", rightController.calculate(speeds[1]) +
+                  kB * (speeds[1] - right.getRate()));
       } catch (LookaheadPointNotFoundException e) {
-          e.printStackTrace();
           drivetrain.stop();
+          throw new UnsupportedOperationException();
       }
   }
 }
