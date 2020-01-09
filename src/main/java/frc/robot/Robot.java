@@ -44,10 +44,10 @@ public class Robot extends TimedRobot {
   public static OdometryHandler handler;
   public static ADXRS450_Gyro gyro;
   public static Waypoint start = new Waypoint(0,0), middle = new Waypoint(0,2),
-          end = new Waypoint(0,3);
+    end = new Waypoint(1.5, 2);
   public static Path path;
   public static PurePursuitController controller;
-  public static final double kV = 1/3.05, kA = 0.002, kB = 0.04;
+  public static final double kV = 0.2/3.05, kA = 0.002, kB = 0.04;
 
   @Override
   public void robotInit() {
@@ -66,7 +66,7 @@ public class Robot extends TimedRobot {
       path = new Path(0.15, 0.98,
               0.001, 3.05, 3, 18, start,
               middle, end);
-      controller = new PurePursuitController(handler, path, 0.2, 0.7);
+      controller = new PurePursuitController(handler, path, 0.4, 0.7);
   }
 
   @Override
@@ -106,19 +106,17 @@ public class Robot extends TimedRobot {
           double[] speeds = controller.getTargetSpeeds();
           FeedForwardController leftController = new FeedForwardController(kV, kA, getPeriod());
           FeedForwardController rightController = new FeedForwardController(kV, kA, getPeriod());
-          drivetrain.tankDrive(leftController.calculate(speeds[0]) +
-                  kB * (speeds[0] - left.getRate()),
-                  rightController.calculate(speeds[1]) +
-                  kB * (speeds[1] - right.getRate()));
+          double leftSpeed = leftController.calculate(speeds[0]) +
+                  kB * (speeds[0] - left.getRate());
+          double rightSpeed = rightController.calculate(speeds[1]) +
+                          kB * (speeds[1] - right.getRate());
+         drivetrain.tankDrive(leftSpeed, rightSpeed);
           SmartDashboard.putNumber("speed left", speeds[0]);
           SmartDashboard.putNumber("speed right", speeds[1]);
-          SmartDashboard.putNumber("speed left converted", leftController.calculate(speeds[0]) +
-                  kB * (speeds[0] - left.getRate()));
-          SmartDashboard.putNumber("speed right converted", rightController.calculate(speeds[1]) +
-                  kB * (speeds[1] - right.getRate()));
+          SmartDashboard.putNumber("speed left converted", leftSpeed);
+          SmartDashboard.putNumber("speed right converted", rightSpeed);
       } catch (LookaheadPointNotFoundException e) {
           drivetrain.stop();
-          throw new UnsupportedOperationException();
       }
   }
 }
