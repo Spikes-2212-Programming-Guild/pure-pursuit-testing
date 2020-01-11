@@ -62,7 +62,7 @@ public class Robot extends TimedRobot {
       left.setDistancePerPulse(6*0.0254*Math.PI/360);
       gyro = new ADXRS450_Gyro();
       handler = new OdometryHandler(left::getDistance, right::getDistance,
-              gyro::getAngle, 0, 0, 0);
+              gyro::getAngle, 0, 0);
       path = new Path(0.15, 0.9,
               0.05, 3.05, 3, 18, start,
               middle, end);
