@@ -71,8 +71,8 @@ public class Robot extends TimedRobot {
               return new Waypoint(getY(), getX());
           }
       };
-      path = new Path(0.015, 0.4,
-              0.02, 3.05, 3, 18, new Waypoint(0, 0), new Waypoint(0, 1.5),  new Waypoint(-1, 1.5), new Waypoint(0, 3));
+      path = new Path(0.075, 0.4,
+              0.6, 3.05, 3, 18, new Waypoint(0, 0), new Waypoint(0, 1.5),  new Waypoint(-1, 1.5), new Waypoint(0, 3));
       controller = new PurePursuitController(handler, path, 0.2, 0.7);
   }
 
@@ -105,7 +105,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-      try {
           double[] speeds = controller.getTargetSpeeds();
           FeedForwardController leftController = new FeedForwardController(kV, kA, getPeriod());
           FeedForwardController rightController = new FeedForwardController(kV, kA, getPeriod());
@@ -118,8 +117,6 @@ public class Robot extends TimedRobot {
           SmartDashboard.putNumber("speed right", speeds[1]);
           SmartDashboard.putNumber("speed left converted", leftSpeed);
           SmartDashboard.putNumber("speed right converted", rightSpeed);
-      } catch (LookaheadPointNotFoundException e) {
-          drivetrain.stop();
-      }
+
   }
 }
