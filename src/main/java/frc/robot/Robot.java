@@ -122,8 +122,6 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {drivetrain.stop();}
 
-  public static double previousRate = 0;
-  public static double currentMaximum = Double.MIN_VALUE;
     @Override
     public void teleopPeriodic() {
         drivetrain.arcadeDrive(-leftJ.getY(), rightJ.getX());
