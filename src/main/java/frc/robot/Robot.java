@@ -50,7 +50,7 @@ public class Robot extends TimedRobot {
     , end = new Waypoint(1, 3);
   public static Path path;
   public static PurePursuitController controller;
-  public static final double kV = 0.7/3.05, kA = 0.0, kB = 0.0;
+  public static final double kV = 0.5/3.05, kA = 0.0002, kB = 0.0;
 
   @Override
   public void robotInit() {
@@ -72,8 +72,8 @@ public class Robot extends TimedRobot {
           }
       };
       path = new Path(0.075, 0.4,
-              0.6, 3.05, 3, 18, new Waypoint(0, 0), new Waypoint(0, 1.5),  new Waypoint(-1, 1.5), new Waypoint(0, 3));
-      controller = new PurePursuitController(handler, path, 0.2, 0.7);
+              0.6, 3.05, 3, 18, new Waypoint(0, 0), new Waypoint(0, 1), new Waypoint(-1, 1.5));
+      controller = new PurePursuitController(handler, path, 0.35, 0.7);
   }
 
     @Override
@@ -105,18 +105,20 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-          double[] speeds = controller.getTargetSpeeds();
-          FeedForwardController leftController = new FeedForwardController(kV, kA, getPeriod());
-          FeedForwardController rightController = new FeedForwardController(kV, kA, getPeriod());
-          double leftSpeed = leftController.calculate(speeds[0]) +
-                  kB * (speeds[0] - left.getRate());
-          double rightSpeed = rightController.calculate(speeds[1]) +
-                          kB * (speeds[1] - right.getRate());
-          drivetrain.tankDrive(leftSpeed, rightSpeed);
-          SmartDashboard.putNumber("speed left", speeds[0]);
-          SmartDashboard.putNumber("speed right", speeds[1]);
-          SmartDashboard.putNumber("speed left converted", leftSpeed);
-          SmartDashboard.putNumber("speed right converted", rightSpeed);
+        if (!controller.done()) {
+            double[] speeds = controller.getTargetSpeeds();
+            FeedForwardController leftController = new FeedForwardController(kV, kA, getPeriod());
+            FeedForwardController rightController = new FeedForwardController(kV, kA, getPeriod());
+            double leftSpeed = leftController.calculate(speeds[0]) +
+                    kB * (speeds[0] - left.getRate());
+            double rightSpeed = rightController.calculate(speeds[1]) +
+                    kB * (speeds[1] - right.getRate());
+            drivetrain.tankDrive(leftSpeed, rightSpeed);
+            SmartDashboard.putNumber("speed left", speeds[0]);
+            SmartDashboard.putNumber("speed right", speeds[1]);
+            SmartDashboard.putNumber("speed left converted", leftSpeed);
+            SmartDashboard.putNumber("speed right converted", rightSpeed);
+        }
 
   }
 }
