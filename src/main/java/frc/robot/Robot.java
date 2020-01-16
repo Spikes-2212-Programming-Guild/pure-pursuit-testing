@@ -11,16 +11,20 @@ import com.ctre.phoenix.motorcontrol.IMotorController;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.spikes2212.command.drivetrains.OdometryDrivetrain;
-import com.spikes2212.command.drivetrains.TankDrivetrain;
 import com.spikes2212.command.drivetrains.commands.FollowPath;
+import com.spikes2212.command.drivetrains.commands.FollowPathNoPID;
 import com.spikes2212.control.FeedForwardController;
 import com.spikes2212.control.PIDVASettings;
-import com.spikes2212.path.*;
+import com.spikes2212.path.OdometryHandler;
+import com.spikes2212.path.Path;
+import com.spikes2212.path.PurePursuitController;
+import com.spikes2212.path.Waypoint;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -51,7 +55,7 @@ public class Robot extends TimedRobot {
   public static ADXRS450_Gyro gyro;
   public static Path path;
   public static PurePursuitController controller;
-  public static final double kV = 0.7/3.05, kA = 0.0, kB = 0.0;
+  public static final double kV = 0.5/3.05, kA = 0.0, kB = 0.0;
   public static FeedForwardController leftController, rightController;
 
   @Override
@@ -96,18 +100,13 @@ public class Robot extends TimedRobot {
       (leftVictor = new WPI_VictorSPX(RobotMap.LEFT_MOTOR_VICTOR)).follow(leftTalon);
       (rightVictor = new WPI_VictorSPX(RobotMap.RIGHT_MOTOR_VICTOR)).follow(rightTalon);
       handler = new OdometryHandler(left::getDistance, right::getDistance,
-              gyro::getAngle, 0, 0) {
-          @Override
-          public Waypoint getWaypoint() {
-              return new Waypoint(getY(), getX());
-          }
-      };
-      path = new Path(0.075, 0.4,
-              0.6, 3.05, 3, 18, new Waypoint(0, 0), new Waypoint(0, 1.5),  new Waypoint(-1, 1.5), new Waypoint(0, 3));
-      controller = new PurePursuitController(handler, path, 0.2, 0.7);
+              gyro::getAngle, 0, 0);
+      path = new Path(0.15, 0.4,
+              0.6, 3.05, 3, 18, new Waypoint(0, 0), new Waypoint(0, 1),  new Waypoint(-1, 1.5), new Waypoint(0, 3));
+      controller = new PurePursuitController(handler, path, 0.4, 0.7);
       leftController = new FeedForwardController(kV, kA, getPeriod());
       rightController = new FeedForwardController(kV, kA, getPeriod());
-      SmartDashboard.putData("autonomous", new FollowPath(drivetrain, path, 0.2,
+      SmartDashboard.putData("autonomous", new FollowPath(drivetrain, path, 0.4,
               new PIDVASettings(kB, 0, 0, kV, kA)));
   }
 
@@ -124,7 +123,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-        drivetrain.arcadeDrive(-leftJ.getY(), rightJ.getX());
+
     }
 
     @Override
@@ -149,4 +148,9 @@ public class Robot extends TimedRobot {
           SmartDashboard.putNumber("speed left converted", leftSpeed);
           SmartDashboard.putNumber("speed right converted", rightSpeed);
   }
+
+    @Override
+    public void testPeriodic() {
+        CommandScheduler.getInstance().run();
+    }
 }
