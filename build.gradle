@@ -63,7 +63,7 @@ dependencies {
 
     testImplementation 'junit:junit:4.12'
 
-    implementation 'com.github.Spikes-2212-Programming-Guild:SpikesLib2:dev-SNAPSHOT'
+    implementation 'com.github.Spikes-2212-Programming-Guild:SpikesLib2:path-SNAPSHOT'
 
 
     // Enable simulation gui support. Must check the box in vscode to enable support
