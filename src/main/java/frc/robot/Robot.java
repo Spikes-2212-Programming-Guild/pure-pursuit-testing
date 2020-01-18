@@ -12,7 +12,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.spikes2212.command.drivetrains.OdometryDrivetrain;
 import com.spikes2212.command.drivetrains.commands.FollowPath;
-import com.spikes2212.command.drivetrains.commands.FollowPathNoPID;
 import com.spikes2212.control.FeedForwardController;
 import com.spikes2212.control.PIDVASettings;
 import com.spikes2212.path.OdometryHandler;
@@ -101,13 +100,13 @@ public class Robot extends TimedRobot {
       (rightVictor = new WPI_VictorSPX(RobotMap.RIGHT_MOTOR_VICTOR)).follow(rightTalon);
       handler = new OdometryHandler(left::getDistance, right::getDistance,
               gyro::getAngle, 0, 0);
-      path = new Path(0.15, 0.4,
-              0.6, 3.05, 3, 18, new Waypoint(0, 0), new Waypoint(0, 1),  new Waypoint(-1, 1.5), new Waypoint(0, 3));
-      controller = new PurePursuitController(handler, path, 0.4, 0.7);
+      path = new Path(0.075, 0.6,
+              0.6, 3.05, 3, 18, new Waypoint(0, 0), new Waypoint(0, 1),  new Waypoint(-1, 1.5), new Waypoint(-1, 2), new Waypoint(0, 5));
+      controller = new PurePursuitController(handler, path, 0.4, 18, 0.7);
       leftController = new FeedForwardController(kV, kA, getPeriod());
       rightController = new FeedForwardController(kV, kA, getPeriod());
-      SmartDashboard.putData("autonomous", new FollowPath(drivetrain, path, 0.4,
-              new PIDVASettings(kB, 0, 0, kV, kA)));
+      SmartDashboard.putData("autonomous", new FollowPath(drivetrain, path, 0.35,
+              new PIDVASettings(kB, 0, 0, kV, kA), 9));
   }
 
     @Override
